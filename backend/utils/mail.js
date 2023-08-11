@@ -4,7 +4,7 @@ exports.transportInit = () =>
     host: "sandbox.smtp.mailtrap.io",
     port: 2525,
     auth: {
-      user: "11435352248f96",
-      pass: "5247b843cd1cd1",
+      user: process.env.mail_user,
+      pass: process.env.mail_password,
     },
   });
