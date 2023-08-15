@@ -17,6 +17,6 @@ app.use("/api/user", userRouter);
 // Catch all errors
 app.use(errorHandler);
 
-app.listen(5000, () => {
+app.listen(8000, () => {
   console.log("App is started");
 });
