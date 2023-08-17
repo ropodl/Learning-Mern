@@ -38,8 +38,9 @@ exports.create = async (req, res) => {
   });
 
   res.status(201).json({
+    success: "ok",
     user: {
-      id: user._id,
+      id: newUser._id,
       name: newUser.name,
       email: newUser.email,
     },
@@ -48,6 +49,7 @@ exports.create = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
   const { userId, OTP } = req.body;
+
   if (!isValidObjectId(userId)) return res.json({ error: "Invalid User!" });
 
   const user = await User.findById(userId);
@@ -66,7 +68,6 @@ exports.verifyEmail = async (req, res) => {
   await user.save();
 
   await EmailVerificationToken.findByIdAndDelete(token._id);
-  res.json({ message: "Your Email is verified" });
   // Nodemailer Transport Initialization
   const transport = transportInit();
   transport.sendMail({
@@ -76,6 +77,19 @@ exports.verifyEmail = async (req, res) => {
     html: `
     <p>Welcome to our app</p>
     `,
+  });
+
+  const jwtToken = jwt.sign({ userId: user._id }, process.env.jwt_secret, { expiresIn: "1d" });
+
+  res.json({
+    success: "ok",
+    message: "Email Verified, You are now logged in",
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      token: jwtToken,
+    },
   });
 };
 

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import createUser from "../../api/auth";
+import { useNavigate } from "react-router-dom";
+
+import { createUser } from "../../api/auth";
+import { useNotification } from "../../hooks";
 import { commonFormClass, commonParentClass } from "../../utils/theme";
 import Container from "../Container";
 import CustomLink from "../CustomLink";
@@ -29,6 +32,8 @@ export default function SignUp() {
     email: "",
     password: "",
   });
+  const navigate = useNavigate()
+  const {updateNotification} = useNotification()
 
   const handleChange = ({ target }) => {
     const { value, name } = target;
@@ -37,11 +42,16 @@ export default function SignUp() {
 
   const formSubmit = async(e) => {
     e.preventDefault();
+    
     const {ok,error} = validate(userInfo)
 
-    if(!ok) return console.log(error);
+    if(!ok) return updateNotification('error',error);
 
-    await createUser(userInfo);
+    const res = await createUser(userInfo);
+    if(res.error) return updateNotification('error',res.error);
+
+    if(res.success) updateNotification('success','An email with OTP has been sent to your email address.');
+    navigate('/email-verification',{state:{user:res.user},replace:true})
   }
 
   const { name, email, password } = userInfo;
@@ -56,7 +66,7 @@ export default function SignUp() {
           <Input name="password" placeholder={"Enter super secure password"} type="password" value={password} onChange={handleChange}/>
           <Submit value={"Sign Up"} />
           <div className="flex justify-between text-gray-400 mt-4">
-            <CustomLink to="/sign-in">Already have an account?</CustomLink>
+            <CustomLink to="/sign-in">Sign In</CustomLink>
           </div>
         </form>
       </Container>

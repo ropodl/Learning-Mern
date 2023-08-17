@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Home from "./components/Home";
+import NotFound from "./components/NotFound";
 import Confirmpassword from "./components/auth/Confirmpassword";
 import Emailverification from "./components/auth/Emailverification";
 import Forgotpassword from "./components/auth/Forgotpassword";
@@ -19,6 +20,7 @@ function App() {
         <Route path="/email-verification" element={<Emailverification />} />
         <Route path="/forgot-password" element={<Forgotpassword />} />
         <Route path="/confirm-password" element={<Confirmpassword />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
