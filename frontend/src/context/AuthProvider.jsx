@@ -15,16 +15,18 @@ export default function AuthProvider({ children }) {
 
   const handleLogin = async (email, password) => {
     setAuthInfo({ ...authInfo, isPending: true });
-    const { error, user } = await signInUser({ email, password });
-    if (error) return setAuthInfo({ ...authInfo, isPending: false, error });
 
-    setAuthInfo({ profile: { ...user }, isLoggedIn: true, isPending: false, error: "" });
-    localStorage.setItem("auth_token", user.token);
+    const { error, user } = await signInUser({ email, password });
+    
+    if (error) {
+      console.log(setAuthInfo({ ...authInfo, isPending: false, error }));
+      return setAuthInfo({ ...authInfo, isPending: false, error });
+    }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_token")
-    setAuthInfo({...defaultAuthInfo});
+    localStorage.removeItem("auth_token");
+    setAuthInfo({ ...defaultAuthInfo });
   };
 
   const isAuth = async () => {

@@ -19,7 +19,7 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/email-verification" element={<Emailverification />} />
         <Route path="/forgot-password" element={<Forgotpassword />} />
-        <Route path="/confirm-password" element={<Confirmpassword />} />
+        <Route path="/reset-password" element={<Confirmpassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

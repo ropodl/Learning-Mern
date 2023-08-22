@@ -10,10 +10,6 @@ import Title from "../form/Title";
 
 const validate = ({ email, password }) => {
   const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  const nameRegex = /^[a-z A-Z]+$/;
-
-  // if(!name.trim()) return {ok:false,error:"Name is missing"}
-  // if(!nameRegex.test(name)) return {ok:false,error: "Invalid Name"}
 
   if (!email.trim()) return { ok: false, error: "Email is missing" };
   if (!emailRegex.test(email)) return { ok: false, error: "Email is in invalid format" };
@@ -45,10 +41,9 @@ export default function Signin() {
     e.preventDefault();
 
     const { ok, error } = validate(userInfo);
-
     if (!ok) return updateNotification("error", error);
 
-    handleLogin(userInfo.email, userInfo.password);
+    await handleLogin(userInfo.email, userInfo.password);
   };
 
   useEffect(() => {
