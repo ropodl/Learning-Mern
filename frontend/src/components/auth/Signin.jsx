@@ -42,8 +42,9 @@ export default function Signin() {
 
     const { ok, error } = validate(userInfo);
     if (!ok) return updateNotification("error", error);
-
+    
     await handleLogin(userInfo.email, userInfo.password);
+    
   };
 
   useEffect(() => {

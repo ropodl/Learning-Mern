@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import ContextProviders from "./context/";
 import "./index.css";
 
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

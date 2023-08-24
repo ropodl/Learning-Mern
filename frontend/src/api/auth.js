@@ -31,9 +31,11 @@ export const verifyEmailOTP = async (userData) => {
 export const signInUser = async (userInfo) => {
   try {
     const { data } = await client.post("/user/sign-in", userInfo);
+    console.log(data);
     return data;
   } catch (error) {
     const { response } = error;
+    console.log(response);
     if (response?.data) return response.data;
 
     return { error: error.message || error };
@@ -72,6 +74,18 @@ export const forgotPassword = async (email) => {
 export const verifyPasswordResetToken = async (token, userId) => {
   try {
     const { data } = await client.post("/user/verify-reset-password-token", { token, userId });
+    return data;
+  } catch (error) {
+    const { response } = error;
+    if (response?.data) return response.data;
+
+    return { error: error.message || error };
+  }
+};
+
+export const resetPassword = async (passwordInfo) => {
+  try {
+    const { data } = await client.post("/user/reset-password", passwordInfo);
     return data;
   } catch (error) {
     const { response } = error;
