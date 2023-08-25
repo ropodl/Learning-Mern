@@ -89,6 +89,7 @@ exports.verifyEmail = async (req, res) => {
       name: user.name,
       email: user.email,
       token: jwtToken,
+      isVerified: user.isVerified,
     },
   });
 };
@@ -151,7 +152,7 @@ exports.forgotPassword = async (req, res) => {
     to: user.email,
     subject: "Reset Password Link",
     html: `
-    <p>Your password reset link is </p>${resetPasswordUrl}
+    <p>Your password reset link is </p><a _target="blank" href="${resetPasswordUrl}">here</a>
     `,
   });
   res.json({ message: "Password Reset Link sent to your Email Address." });
@@ -197,7 +198,7 @@ exports.signIn = async (req, res, next) => {
 
   const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, { expiresIn: "1d" });
 
-  const { _id, name } = user;
+  const { _id, name, isVerified } = user;
 
   res.json({
     success: "ok",
@@ -206,6 +207,7 @@ exports.signIn = async (req, res, next) => {
       name,
       email,
       token,
+      isVerified,
     },
   });
 };
