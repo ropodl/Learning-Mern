@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getIsAuth, signInUser } from "../api/auth";
 import { useNotification } from "../hooks/";
 
@@ -15,6 +16,8 @@ export default function AuthProvider({ children }) {
   const [authInfo, setAuthInfo] = useState({ ...defaultAuthInfo });
   const { updateNotification } = useNotification();
 
+  const navigate = useNavigate()
+
   const handleLogin = async (email, password) => {
     setAuthInfo({ ...authInfo, isPending: true });
 
@@ -26,18 +29,13 @@ export default function AuthProvider({ children }) {
     }
 
     setAuthInfo({
-      profile: { ...user },
+      profile: user,
       isPending: false,
       isLoggedIn: true,
       error: "",
     });
 
-    localStorage.setItem("auth-token", user.token);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    setAuthInfo({ ...defaultAuthInfo });
+    localStorage.setItem("auth_token", user.token);
   };
 
   const isAuth = async () => {
@@ -46,10 +44,21 @@ export default function AuthProvider({ children }) {
 
     setAuthInfo({ ...authInfo, isPending: true });
 
-    const { error, user } = await getIsAuth(token);
-    if (error) return setAuthInfo({ ...authInfo, isPending: false, error });
+    const { error, user, name, email, isVerified } = await getIsAuth(token);
+    
 
-    setAuthInfo({ profile: { ...user }, isLoggedIn: true, isPending: false, error: "" });
+    if (error) {
+      updateNotification("error", error);
+      return setAuthInfo({ ...authInfo, isPending: false, error });
+    }
+    // Profile here below is hacky way check back later
+    setAuthInfo({ profile: { user, name, email,isVerified }, isLoggedIn: true, isPending: false, error: "" });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    setAuthInfo({ ...defaultAuthInfo });
+    navigate("/")
   };
 
   useEffect(() => {

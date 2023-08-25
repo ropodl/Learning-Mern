@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { verifyEmailOTP } from "../../api/auth";
+import { resendEmailVerificationToken, verifyEmailOTP } from "../../api/auth";
 import { useAuth, useNotification } from "../../hooks";
 import { commonFormClass, commonParentClass } from "../../utils/theme";
 import Container from "../Container";
@@ -18,8 +18,9 @@ export default function Emailverification() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { updateNotification } = useNotification();
-  const {isAuth,authInfo} = useAuth()
-  const {isLoggedIn} = authInfo
+  const { isAuth, authInfo } = useAuth();
+  const { isLoggedIn, profile } = authInfo;
+  const isVerified = profile?.isVerified;
 
   const user = state?.user;
 
@@ -55,13 +56,13 @@ export default function Emailverification() {
 
     if (!validateOTP(otp)) return updateNotification("error", "Invalid OTP");
 
-    const { success, user:userResponse, message, error } = await verifyEmailOTP({ userId: user.id, OTP: otp.join("") });
+    const { success, user: userResponse, message, error } = await verifyEmailOTP({ userId: user.id, OTP: otp.join("") });
 
     if (error) return updateNotification("error", error);
 
     if (success) updateNotification("success", message);
 
-    localStorage.setItem("auth_token",userResponse.token);
+    localStorage.setItem("auth_token", userResponse.token);
     isAuth();
 
     navigate("/");
@@ -69,13 +70,19 @@ export default function Emailverification() {
 
   const validateOTP = (otp) => {
     let valid = false;
-
     for (let val of otp) {
       valid = !isNaN(parseInt(val));
       if (!valid) break;
     }
-
     return valid;
+  };
+
+  const resendVerification = async () => {
+    const { error, message } = await resendEmailVerificationToken(user.id);
+
+    if (error) return updateNotification("error", error);
+
+    updateNotification("success", message);
   };
 
   useEffect(() => {
@@ -84,8 +91,8 @@ export default function Emailverification() {
 
   useEffect(() => {
     if (!user) navigate("/not-found");
-    if (isLoggedIn) navigate("/");
-  }, [user,isLoggedIn]);
+    if (isLoggedIn && isVerified) navigate("/");
+  }, [user, isLoggedIn, isVerified]);
 
   return (
     <div className={commonParentClass}>
@@ -99,6 +106,9 @@ export default function Emailverification() {
             })}
           </div>
           <Submit value={"Verify"} />
+          <button onClick={resendVerification} type="button" className="mx-auto w-full mt-3 p-2 dark:text-white hover:text-blue-500 text-center cursor-pointer hover:underline">
+            Don't have OTP
+          </button>
         </form>
       </Container>
     </div>
