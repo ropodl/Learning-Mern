@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+
 exports.transportInit = () =>
   nodemailer.createTransport({
     host: "sandbox.smtp.mailtrap.io",

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const actorScheme = mongoose.Schema(
+const actorSchema = mongoose.Schema(
   {
     name: { type: String, trim: true, required: true },
     about: { type: String, trim: true, required: true },
@@ -14,4 +14,6 @@ const actorScheme = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Actor", actorScheme);
+actorSchema.index({ name: "text" });
+
+module.exports = mongoose.model("Actor", actorSchema);

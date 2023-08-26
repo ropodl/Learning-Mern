@@ -162,6 +162,16 @@ exports.sendPasswordResetResponse = (req, res) => {
   res.json({ valid: true });
 };
 
+exports.isAuthRes = (req, res) => {
+  const { user } = req;
+  res.json({
+    user: user._id,
+    name: user.name,
+    email: user.email,
+    isVerified: user.isVerified,
+  });
+};
+
 exports.resetPassword = async (req, res) => {
   const { newPassword, userId } = req.body;
 
@@ -196,9 +206,9 @@ exports.signIn = async (req, res, next) => {
   const matched = await user.comparePassword(password);
   if (!matched) return sendError(res, "Email/Password mismatch");
 
-  const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, { expiresIn: "1d" });
+  const { _id, name, isVerified, role } = user;
 
-  const { _id, name, isVerified } = user;
+  const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, { expiresIn: "1d" });
 
   res.json({
     success: "ok",
@@ -206,6 +216,7 @@ exports.signIn = async (req, res, next) => {
       id: _id,
       name,
       email,
+      role,
       token,
       isVerified,
     },
