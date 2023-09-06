@@ -16,7 +16,7 @@ export default function AuthProvider({ children }) {
   const [authInfo, setAuthInfo] = useState({ ...defaultAuthInfo });
   const { updateNotification } = useNotification();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleLogin = async (email, password) => {
     setAuthInfo({ ...authInfo, isPending: true });
@@ -27,6 +27,8 @@ export default function AuthProvider({ children }) {
       updateNotification("error", error);
       return setAuthInfo({ ...authInfo, isPending: false, error });
     }
+
+    navigate("/", { replace: true });
 
     setAuthInfo({
       profile: user,
@@ -44,21 +46,20 @@ export default function AuthProvider({ children }) {
 
     setAuthInfo({ ...authInfo, isPending: true });
 
-    const { error, user, name, email, isVerified } = await getIsAuth(token);
-    
+    const { error, user, name, email, isVerified, role } = await getIsAuth(token);
 
     if (error) {
       updateNotification("error", error);
       return setAuthInfo({ ...authInfo, isPending: false, error });
     }
     // Profile here below is hacky way check back later
-    setAuthInfo({ profile: { user, name, email,isVerified }, isLoggedIn: true, isPending: false, error: "" });
+    setAuthInfo({ profile: { user, name, email, isVerified, role }, isLoggedIn: true, isPending: false, error: "" });
   };
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
     setAuthInfo({ ...defaultAuthInfo });
-    navigate("/")
+    navigate("/");
   };
 
   useEffect(() => {

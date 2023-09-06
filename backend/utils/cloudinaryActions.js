@@ -8,13 +8,26 @@ cloudinary.config({
 });
 
 exports.uploadImage = async (path) => {
-  const { secure_url: url, public_id } = await cloudinary.uploader.upload(path, {
-    gravity: "face",
-    height: 500,
-    width: 500,
-    crop: "thumb",
-  });
+  const { secure_url: url, public_id } = await cloudinary.uploader.upload(
+    path,
+    {
+      gravity: "face",
+      height: 500,
+      width: 500,
+      crop: "thumb",
+    }
+  );
 
+  return { url, public_id };
+};
+
+exports.uploadVideo = async (path) => {
+  const { secure_url: url, public_id } = await cloudinary.uploader.upload(
+    path,
+    {
+      resource_type: "video",
+    }
+  );
   return { url, public_id };
 };
 
@@ -22,3 +35,5 @@ exports.removeImage = async (id) => {
   const { result } = await cloudinary.uploader.destroy(id);
   return { result };
 };
+
+module.exports = cloudinary;

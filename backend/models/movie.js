@@ -17,12 +17,12 @@ const movieSchema = mongoose.Schema(
       required: true,
     },
     genres: {
-      type: String,
+      type: [String],
       required: true,
       enum: genres,
     },
     tags: {
-      type: String,
+      type: [String],
       required: true,
     },
     cast: [
@@ -42,7 +42,8 @@ const movieSchema = mongoose.Schema(
       type: Object,
       url: { type: String, required: true },
       public_id: { type: String, required: true },
-      required: true,
+      responsive: [URL],
+      // required: true,
     },
     trailer: {
       type: Object,

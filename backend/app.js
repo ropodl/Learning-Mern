@@ -10,6 +10,7 @@ const cors = require("cors");
 
 const userRouter = require("./routes/user");
 const actorRouter = require("./routes/actor");
+const movieRouter = require("./routes/movie");
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 
 app.use("/api/user", userRouter);
 app.use("/api/actor", actorRouter);
+app.use("/api/movie", movieRouter);
 
 // Catch all errors
 app.use("/*", handleNotFound);

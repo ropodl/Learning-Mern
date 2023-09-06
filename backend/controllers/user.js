@@ -14,7 +14,10 @@ exports.create = async (req, res) => {
   const { name, email, password } = req.body;
 
   const oldUser = await User.findOne({ email });
-  if (oldUser) return res.status(401).json({ error: "This email address is already is use." });
+  if (oldUser)
+    return res
+      .status(401)
+      .json({ error: "This email address is already is use." });
 
   const newUser = new User({ name, email, password });
   await newUser.save();
@@ -79,7 +82,9 @@ exports.verifyEmail = async (req, res) => {
     `,
   });
 
-  const jwtToken = jwt.sign({ userId: user._id }, process.env.jwt_secret, { expiresIn: "1d" });
+  const jwtToken = jwt.sign({ userId: user._id }, process.env.jwt_secret, {
+    expiresIn: "1d",
+  });
 
   res.json({
     success: "ok",
@@ -90,6 +95,7 @@ exports.verifyEmail = async (req, res) => {
       email: user.email,
       token: jwtToken,
       isVerified: user.isVerified,
+      role: user.role,
     },
   });
 };
@@ -105,7 +111,8 @@ exports.resendVerificationToken = async (req, res) => {
   const existingToken = await EmailVerificationToken.findOne({
     owner: userId,
   });
-  if (existingToken) return sendError(res, "Token can be requested after one hour");
+  if (existingToken)
+    return sendError(res, "Token can be requested after one hour");
 
   // OTP Starts
   let OTP = generateToken();
@@ -137,10 +144,14 @@ exports.forgotPassword = async (req, res) => {
   if (!user) return sendError(res, "User not found", 404);
 
   const alreadyHasToken = await PasswordResetToken.findOne({ owner: user._id });
-  if (alreadyHasToken) return sendError(res, "Token can be requested after one hour");
+  if (alreadyHasToken)
+    return sendError(res, "Token can be requested after one hour");
 
   const token = await generateRandomByte();
-  const newPasswordResetToken = await PasswordResetToken({ owner: user._id, token });
+  const newPasswordResetToken = await PasswordResetToken({
+    owner: user._id,
+    token,
+  });
 
   await newPasswordResetToken.save();
 
@@ -169,6 +180,7 @@ exports.isAuthRes = (req, res) => {
     name: user.name,
     email: user.email,
     isVerified: user.isVerified,
+    role: user.role,
   });
 };
 
@@ -178,7 +190,8 @@ exports.resetPassword = async (req, res) => {
   const user = await User.findById(userId);
   const matched = await user.comparePassword(newPassword);
 
-  if (matched) return sendError(res, "New password must be not similiar to old password");
+  if (matched)
+    return sendError(res, "New password must be not similiar to old password");
 
   user.password = newPassword;
 
@@ -208,7 +221,9 @@ exports.signIn = async (req, res, next) => {
 
   const { _id, name, isVerified, role } = user;
 
-  const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, { expiresIn: "1d" });
+  const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, {
+    expiresIn: "1d",
+  });
 
   res.json({
     success: "ok",

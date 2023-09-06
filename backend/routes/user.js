@@ -14,7 +14,7 @@ router.post("/verify-token", verifyEmail);
 router.post("/resend-token", resendVerificationToken);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-password-token", validatePasswordToken, sendPasswordResetResponse);
-router.post("/reset-password", passwordValidator, validatePassword, validatePasswordToken, resetPassword);
+router.post("/reset-password", passwordValidator, validate, validatePasswordToken, resetPassword);
 // IS USER AUTH
 router.get("/is-auth", isAuth, isAuthRes);
 

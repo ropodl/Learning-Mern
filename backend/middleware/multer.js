@@ -2,7 +2,7 @@ const multer = require("multer");
 
 const storage = multer.diskStorage({});
 
-const fileFilter = (req, file, cb) => {
+const imageFileFilter = (req, file, cb) => {
   if (!file.mimetype.startsWith("image")) {
     cb("Supports only image files", false);
   }
@@ -10,4 +10,13 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-exports.uploadImage = multer({ storage, fileFilter });
+const videoFileFilter = (req, file, cb) => {
+  if (!file.mimetype.startsWith("video")) {
+    cb("Supports only image files", false);
+  }
+
+  cb(null, true);
+};
+
+exports.uploadImage = multer({ storage, imageFileFilter });
+exports.uploadVideo = multer({ storage, videoFileFilter });

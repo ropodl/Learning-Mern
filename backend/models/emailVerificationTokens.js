@@ -1,10 +1,14 @@
-  const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const emailVerificationTokenScheme = mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   token: { type: String, required: true },
-  createdAt: { type: Date, expires: 3600, default: Date.now() },
+  createdAt: {
+    type: Date,
+    // expires: 3600,
+    default: Date.now(),
+  },
 });
 
 emailVerificationTokenScheme.pre("save", async function (next) {
@@ -19,4 +23,7 @@ emailVerificationTokenScheme.methods.compareToken = async function (token) {
   return result;
 };
 
-module.exports = mongoose.model("EmailVerficationToken", emailVerificationTokenScheme);
+module.exports = mongoose.model(
+  "EmailVerficationToken",
+  emailVerificationTokenScheme
+);

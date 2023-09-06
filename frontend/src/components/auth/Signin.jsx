@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useNotification } from "../../hooks";
 import { commonFormClass, commonParentClass } from "../../utils/theme";
@@ -47,9 +47,9 @@ export default function Signin() {
     
   };
 
-  useEffect(() => {
-    if (isLoggedIn) navigate("/");
-  }, [isLoggedIn]);
+  // useEffect(() => {
+  //   if (isLoggedIn) navigate("/");
+  // }, [isLoggedIn]);
 
   return (
     <div className={commonParentClass}>
