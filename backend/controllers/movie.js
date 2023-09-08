@@ -1,6 +1,7 @@
 const cloudinary = require("../utils/cloudinaryActions");
 const { sendError } = require("../utils/error");
-const { uploadVideo } = require("../utils/cloudinaryActions");
+// const { uploadVideo } = require("../utils/cloudinaryActions");
+const { cloudinary } = require("../utils/cloudinaryActions");
 const Movie = require("../models/movie");
 const { isValidObjectId } = require("mongoose");
 
@@ -243,7 +244,9 @@ exports.uploadTrailer = async (req, res) => {
 
   if (!file) return sendError(res, "Video file is missing");
 
-  const { url, public_id } = await uploadVideo(file.path);
+  const { url, public_id } = await cloudinary.uploader.upload(file.path, {
+    resource_type: "video",
+  });
 
   res.status(201).json({ url, public_id });
 };

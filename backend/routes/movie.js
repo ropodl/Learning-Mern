@@ -43,8 +43,6 @@ router.post(
   updateWithPoster
 );
 
-router.delete("/:id", isAuth, isAdmin, uploadVideo.single("video"), remove);
-
 router.post(
   "/upload-trailer",
   isAuth,
@@ -52,5 +50,6 @@ router.post(
   uploadVideo.single("video"),
   uploadTrailer
 );
+router.delete("/:id", isAuth, isAdmin, uploadVideo.single("video"), remove);
 
 module.exports = router;

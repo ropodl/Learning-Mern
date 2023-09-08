@@ -13,8 +13,7 @@ import { useAuth } from "./hooks";
 
 function App() {
   const {authInfo} = useAuth();
-  const isAdmin = authInfo.profile?.role === "admin"
-  console.log(isAdmin)  
+  const isAdmin = authInfo.profile?.role === "admin";
 
   if(isAdmin) return <AdminNavigator/>
   return (

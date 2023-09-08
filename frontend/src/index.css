@@ -9,3 +9,31 @@
 .spin-button-none[type="number"] {
   -moz-appearance: textfield;
 }
+
+.animate-scale {
+  transform-origin: 0% 0%;
+  animation: scale 0.2s;
+}
+
+.animate-scale-reverse {
+  transform-origin: 0% 0%;
+  animation: scale 0.2s reverse forwards;
+}
+
+@keyframes scale {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+.file_drop_zone {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: unset !important;
+  border: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
