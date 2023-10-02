@@ -42,9 +42,8 @@ export default function Signin() {
 
     const { ok, error } = validate(userInfo);
     if (!ok) return updateNotification("error", error);
-    
+
     await handleLogin(userInfo.email, userInfo.password);
-    
   };
 
   // useEffect(() => {
@@ -56,8 +55,8 @@ export default function Signin() {
       <Container>
         <form onSubmit={formSubmit} className={commonFormClass + " w-80"}>
           <Title>Sign In</Title>
-          <Input name={"email"} value={userInfo.email} placeholder={"Enter your fancy email"} type="email" onChange={handleChange}/>
-          <Input name={"password"} value={userInfo.password} placeholder={"Enter password"} type="password" onChange={handleChange}/>
+          <Input name={"email"} value={userInfo.email} placeholder={"Enter your fancy email"} type="email" onChange={handleChange} />
+          <Input name={"password"} value={userInfo.password} placeholder={"Enter password"} type="password" onChange={handleChange} />
           <Submit value="Sign In" />
           <div className="flex justify-between text-gray-400 mt-4">
             <CustomLink to="/forgot-password">Forgot Password</CustomLink>
