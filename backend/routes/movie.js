@@ -1,47 +1,17 @@
 const express = require("express");
-const { isAuth, isAdmin } = require("../middleware/auth");
 const {
   uploadTrailer,
-  create,
-  updateWithPoster,
-  updateNoPoster,
-  remove,
+  createMovie,
+  updateMovieWithoutPoster,
+  updateMovieWithPoster,
+  removeMovie,
+  getMovies,
 } = require("../controllers/movie");
-const { uploadVideo, uploadImage } = require("../middleware/multer");
-const { validateMovie } = require("../middleware/validator/movie");
-const { validate } = require("../middleware/validator/validate");
-const { parseMovie } = require("../utils/parse");
+const { isAuth, isAdmin } = require("../middlewares/auth");
+const { parseData } = require("../middlewares/helper");
+const { uploadVideo, uploadImage } = require("../middlewares/multer");
+const { validateMovie, validate } = require("../middlewares/validator");
 const router = express.Router();
-
-router.post(
-  "/create",
-  isAuth,
-  isAdmin,
-  uploadImage.single("poster"),
-  parseMovie,
-  validateMovie,
-  validate,
-  create
-);
-
-router.post(
-  "/update-no-poster/:id",
-  isAuth,
-  isAdmin,
-  parseMovie,
-  validateMovie,
-  validate,
-  updateNoPoster
-);
-router.post(
-  "/update-with-poster/:id",
-  isAuth,
-  isAdmin,
-  parseMovie,
-  validateMovie,
-  validate,
-  updateWithPoster
-);
 
 router.post(
   "/upload-trailer",
@@ -50,6 +20,36 @@ router.post(
   uploadVideo.single("video"),
   uploadTrailer
 );
-router.delete("/:id", isAuth, isAdmin, uploadVideo.single("video"), remove);
+router.post(
+  "/create",
+  isAuth,
+  isAdmin,
+  uploadImage.single("poster"),
+  parseData,
+  validateMovie,
+  validate,
+  createMovie
+);
+router.patch(
+  "/update-movie-without-poster/:movieId",
+  isAuth,
+  isAdmin,
+  // parseData,
+  validateMovie,
+  validate,
+  updateMovieWithoutPoster
+);
+router.patch(
+  "/update-movie-with-poster/:movieId",
+  isAuth,
+  isAdmin,
+  uploadImage.single("poster"),
+  parseData,
+  validateMovie,
+  validate,
+  updateMovieWithPoster
+);
+router.delete("/:movieId", isAuth, isAdmin, removeMovie);
+router.get("/movies", isAuth, isAdmin, getMovies);
 
 module.exports = router;

@@ -1,19 +1,41 @@
 const express = require("express");
-const { uploadImage } = require("../middleware/multer");
-const { actorValidator } = require("../middleware/validator/actor");
-const { validate } = require("../middleware/validator/validate");
-const { create, update, remove, search, latest, actor } = require("../controllers/actor");
-const { isAdmin, isAuth } = require("../middleware/auth");
-
+const {
+  createActor,
+  updateActor,
+  removeActor,
+  searchActor,
+  getLatestActors,
+  getSingleActor,
+  getActors,
+} = require("../controllers/actor");
+const { isAuth, isAdmin } = require("../middlewares/auth");
+const { uploadImage } = require("../middlewares/multer");
+const { actorInfoValidator, validate } = require("../middlewares/validator");
 const router = express.Router();
 
-router.post("/create", uploadImage.single("avatar"), isAuth, isAdmin, actorValidator, validate, create);
-router.post("/update/:id", uploadImage.single("avatar"), isAuth, isAdmin, actorValidator, validate, update);
+router.post(
+  "/create",
+  isAuth,
+  isAdmin,
+  uploadImage.single("avatar"),
+  actorInfoValidator,
+  validate,
+  createActor
+);
 
-router.delete("/:id", isAuth, isAdmin, remove);
+router.post(
+  "/update/:actorId",
+  isAuth,
+  isAdmin,
+  uploadImage.single("avatar"),
+  actorInfoValidator,
+  validate,
+  updateActor
+);
 
-router.get("/latest", latest);
-router.get("/search", search);
-router.get("/:id", actor);
-
+router.delete("/:actorId", isAuth, isAdmin, removeActor);
+router.get("/search", isAuth, isAdmin, searchActor);
+router.get("/latest-uploads", isAuth, isAdmin, getLatestActors);
+router.get("/actors", isAuth, isAdmin, getActors);
+router.get("/single/:id", getSingleActor);
 module.exports = router;

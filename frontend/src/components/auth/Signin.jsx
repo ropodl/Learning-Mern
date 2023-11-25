@@ -1,21 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useNotification } from "../../hooks";
-import { commonFormClass, commonParentClass } from "../../utils/theme";
+import { isValidEmail } from "../../utils/helper";
+import { commonModalClasses } from "../../utils/theme";
+
 import Container from "../Container";
 import CustomLink from "../CustomLink";
-import Input from "../form/Input";
+import FormContainer from "../form/FormContainer";
+import FormInput from "../form/FormInput";
 import Submit from "../form/Submit";
 import Title from "../form/Title";
 
-const validate = ({ email, password }) => {
-  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const validateUserInfo = ({ email, password }) => {
+  if (!email.trim()) return { ok: false, error: "Email is missing!" };
+  if (!isValidEmail(email)) return { ok: false, error: "Invalid email!" };
 
-  if (!email.trim()) return { ok: false, error: "Email is missing" };
-  if (!emailRegex.test(email)) return { ok: false, error: "Email is in invalid format" };
-
-  if (!password.trim()) return { ok: false, error: "Password is missing" };
-  if (password.length < 8) return { ok: false, error: "Password must be 8 characters long" };
+  if (!password.trim()) return { ok: false, error: "Password is missing!" };
+  if (password.length < 8)
+    return { ok: false, error: "Password must be 8 characters long!" };
 
   return { ok: true };
 };
@@ -27,43 +29,56 @@ export default function Signin() {
   });
 
   const navigate = useNavigate();
-
   const { updateNotification } = useNotification();
   const { handleLogin, authInfo } = useAuth();
-  const { isLoggedIn } = authInfo;
+  const { isPending, isLoggedIn } = authInfo;
 
   const handleChange = ({ target }) => {
     const { value, name } = target;
     setUserInfo({ ...userInfo, [name]: value });
   };
 
-  const formSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const { ok, error } = validateUserInfo(userInfo);
 
-    const { ok, error } = validate(userInfo);
     if (!ok) return updateNotification("error", error);
-
-    await handleLogin(userInfo.email, userInfo.password);
+    handleLogin(userInfo.email, userInfo.password);
   };
 
   // useEffect(() => {
+  //   // we want to move our user to somewhere else
   //   if (isLoggedIn) navigate("/");
   // }, [isLoggedIn]);
 
   return (
-    <div className={commonParentClass}>
+    <FormContainer>
       <Container>
-        <form onSubmit={formSubmit} className={commonFormClass + " w-80"}>
-          <Title>Sign In</Title>
-          <Input name={"email"} value={userInfo.email} placeholder={"Enter your fancy email"} type="email" onChange={handleChange} />
-          <Input name={"password"} value={userInfo.password} placeholder={"Enter password"} type="password" onChange={handleChange} />
-          <Submit value="Sign In" />
-          <div className="flex justify-between text-gray-400 mt-4">
-            <CustomLink to="/forgot-password">Forgot Password</CustomLink>
-            <CustomLink to="/sign-up">Sign Up</CustomLink>
+        <form onSubmit={handleSubmit} className={commonModalClasses + " w-72"}>
+          <Title>Sign in</Title>
+          <FormInput
+            value={userInfo.email}
+            onChange={handleChange}
+            label="Email"
+            placeholder="john@email.com"
+            name="email"
+          />
+          <FormInput
+            value={userInfo.password}
+            onChange={handleChange}
+            label="Password"
+            placeholder="********"
+            name="password"
+            type="password"
+          />
+          <Submit value="Sign in" busy={isPending} />
+
+          <div className="flex justify-between">
+            <CustomLink to="/auth/forget-password">Forget password</CustomLink>
+            <CustomLink to="/auth/signup">Sign up</CustomLink>
           </div>
         </form>
       </Container>
-    </div>
+    </FormContainer>
   );
 }

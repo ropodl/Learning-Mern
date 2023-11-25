@@ -3,10 +3,8 @@ import client from "./client";
 export const createUser = async (userInfo) => {
   try {
     const { data } = await client.post("/user/create", userInfo);
-    console.log(data);
     return data;
   } catch (error) {
-    console.log(error);
     const { response } = error;
     if (response?.data) return response.data;
 
@@ -14,13 +12,11 @@ export const createUser = async (userInfo) => {
   }
 };
 
-export const verifyEmailOTP = async (userData) => {
+export const verifyUserEmail = async (userInfo) => {
   try {
-    const { data } = await client.post("/user/verify-token", userData);
-    console.log(data);
+    const { data } = await client.post("/user/verify-email", userInfo);
     return data;
   } catch (error) {
-    console.log(error);
     const { response } = error;
     if (response?.data) return response.data;
 
@@ -31,11 +27,9 @@ export const verifyEmailOTP = async (userData) => {
 export const signInUser = async (userInfo) => {
   try {
     const { data } = await client.post("/user/sign-in", userInfo);
-    console.log(data);
     return data;
   } catch (error) {
     const { response } = error;
-    console.log(response);
     if (response?.data) return response.data;
 
     return { error: error.message || error };
@@ -59,9 +53,9 @@ export const getIsAuth = async (token) => {
   }
 };
 
-export const forgotPassword = async (email) => {
+export const forgetPassword = async (email) => {
   try {
-    const { data } = await client.post("/user/forgot-password", { email });
+    const { data } = await client.post("/user/forget-password", { email });
     return data;
   } catch (error) {
     const { response } = error;
@@ -73,7 +67,10 @@ export const forgotPassword = async (email) => {
 
 export const verifyPasswordResetToken = async (token, userId) => {
   try {
-    const { data } = await client.post("/user/verify-reset-password-token", { token, userId });
+    const { data } = await client.post("/user/verify-pass-reset-token", {
+      token,
+      userId,
+    });
     return data;
   } catch (error) {
     const { response } = error;
@@ -96,9 +93,11 @@ export const resetPassword = async (passwordInfo) => {
 };
 
 export const resendEmailVerificationToken = async (userId) => {
-  console.log(userId);
   try {
-    const { data } = await client.post("/user/resend-token", { userId });
+    const { data } = await client.post(
+      "/user/resend-email-verification-token",
+      { userId }
+    );
     return data;
   } catch (error) {
     const { response } = error;

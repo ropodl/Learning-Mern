@@ -1,88 +1,69 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { BsFillSunFill } from "react-icons/bs";
-import { useTheme } from "../../hooks";
+import React from "react";
+import { Link, NavLink } from "react-router-dom";
+import { AiOutlineHome } from "react-icons/ai";
+import { BiMoviePlay } from "react-icons/bi";
+import { FaUserNinja } from "react-icons/fa";
+import { FiLogOut } from "react-icons/fi";
+import { useAuth } from "../../hooks";
 
-export default function Navbar({ onAddActorClick, onAddMovieClick }) {
-  const [showOptions, setShowOptions] = useState(false);
-  const { toggleTheme } = useTheme();
-
-  const options = [
-    { title: "Add Movie", onClick: onAddMovieClick },
-    { title: "Add Actor", onClick: onAddActorClick },
-  ];
-
+export default function Navbar() {
+  const { handleLogout } = useAuth();
   return (
-    <div className="flex items-center justify-between relative bg-primary p-3">
-      <input type="text" className="border-2 border-white focus:opacity-70 dark:text-white transition bg-transparent rounded text-lg p-1 outline-none" placeholder="Search Movies..." />
+    <nav className="w-48 min-h-screen bg-secondary border-r border-gray-300">
+      <div className="flex flex-col justify-between pl-5 h-screen sticky top-0">
+        <ul>
+          <li className="mb-8">
+            <Link to="/">
+              <img src="./logo.png" alt="logo" className="h-14 p-2" />
+            </Link>
+          </li>
 
-      <div className="flex items-center space-x-3">
-        <button onClick={toggleTheme} className="text-white">
-          <BsFillSunFill size={24} />
-        </button>
-        <div className="relative">
-          <button onClick={() => setShowOptions(true)} className="flex items-center space-x-2 dark:border-dark-subtle border-white text-white hover:opacity-80 transition font-semibold border-2 rounded text-lg px-3 py-1">
-            <span>Create</span>
-            <AiOutlinePlus />
+          <li>
+            <NavItem to="/">
+              <AiOutlineHome />
+              <span>Home</span>
+            </NavItem>
+          </li>
+          <li>
+            <NavItem to="/movies">
+              <BiMoviePlay />
+              <span>Movies</span>
+            </NavItem>
+          </li>
+          <li>
+            <NavItem to="/actors">
+              <FaUserNinja />
+              <span>Actors</span>
+            </NavItem>
+          </li>
+        </ul>
+
+        <div className="flex flex-col items-start pb-5">
+          <span className="font-semibold text-white text-xl">Admin</span>
+          <button
+            onClick={handleLogout}
+            className="flex items-center text-dark-subtle text-sm hover:text-white transition space-x-1"
+          >
+            <FiLogOut />
+            <span>Log out</span>
           </button>
-
-          <CreateOptions visible={showOptions} onClose={() => setShowOptions(false)} options={options} />
         </div>
       </div>
-    </div>
+    </nav>
   );
 }
 
-const CreateOptions = ({ options, visible, onClose }) => {
-  const container = useRef();
-  const containerID = "options-container";
-
-  useEffect(() => {
-    const handleClose = (e) => {
-      if (!visible) return;
-      const { parentElement, id } = e.target;
-
-      if (parentElement.id === containerID || id === containerID) return;
-
-      // New Update
-      if (container.current) {
-        if (!container.current.classList.contains("animate-scale")) container.current.classList.add("animate-scale-reverse");
+const NavItem = ({ children, to }) => {
+  const commonClasses =
+    " flex items-center text-lg space-x-2 p-2 hover:opacity-80";
+  return (
+    <NavLink
+      className={({ isActive }) =>
+        (isActive ? "text-white" : "text-gray-400") + commonClasses
       }
-    };
-
-    document.addEventListener("click", handleClose);
-    return () => {
-      document.removeEventListener("click", handleClose);
-    };
-  }, [visible]);
-
-  if (!visible) return null;
-
-  return (
-    <div
-      id={containerID}
-      ref={container}
-      className="absolute right-0 top-12 flex flex-col py-1 dark:bg-secondary bg-white drop-shadow-lg rounded animate-scale"
-      onAnimationEnd={(e) => {
-        if (e.target.classList.contains("animate-scale-reverse")) onClose();
-        e.target.classList.remove("animate-scale");
-      }}
+      to={to}
     >
-      {options.map(({ title, onClick }) => {
-        return (
-          <Option onClick={onClick} key={title}>
-            {title}
-          </Option>
-        );
-      })}
-    </div>
-  );
-};
-
-const Option = ({ children, onClick }) => {
-  return (
-    <button onClick={onClick} className="dark:text-white text-secondary hover:opacity-80 transition px-4 py-2">
       {children}
-    </button>
+    </NavLink>
   );
 };

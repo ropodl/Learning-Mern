@@ -1,187 +1,176 @@
-const { isValidObjectId } = require("mongoose");
 const jwt = require("jsonwebtoken");
-
 const User = require("../models/user");
+const EmailVerificationToken = require("../models/emailVerificationToken");
 const PasswordResetToken = require("../models/passwordResetToken");
-const EmailVerificationToken = require("../models/emailVerificationTokens");
-
-const { generateToken } = require("../utils/token");
-const { transportInit } = require("../utils/mail");
-const { generateRandomByte } = require("../utils/generateRandomByte");
-const { sendError } = require("../utils/error");
+const { isValidObjectId } = require("mongoose");
+const { generateOTP, generateMailTransporter } = require("../utils/mail");
+const { sendError, generateRandomByte } = require("../utils/helper");
 
 exports.create = async (req, res) => {
   const { name, email, password } = req.body;
 
   const oldUser = await User.findOne({ email });
-  if (oldUser)
-    return res
-      .status(401)
-      .json({ error: "This email address is already is use." });
+
+  if (oldUser) return sendError(res, "This email is already in use!");
 
   const newUser = new User({ name, email, password });
   await newUser.save();
-  // OTP Starts
-  let OTP = generateToken();
-  const newEmailVerificationTokens = new EmailVerificationToken({
+
+  // generate 6 digit otp
+  let OTP = generateOTP();
+
+  // store otp inside our db
+  const newEmailVerificationToken = new EmailVerificationToken({
     owner: newUser._id,
     token: OTP,
   });
-  await newEmailVerificationTokens.save();
 
-  const transport = transportInit();
+  await newEmailVerificationToken.save();
+
+  // send that otp to our user
+
+  var transport = generateMailTransporter();
 
   transport.sendMail({
-    from: "verification@moviewreview.com",
+    from: "verification@reviewapp.com",
     to: newUser.email,
     subject: "Email Verification",
     html: `
-    <p>Your OTP is </p>${OTP}
+      <p>Your verification OTP</p>
+      <h1>${OTP}</h1>
+
     `,
   });
 
   res.status(201).json({
-    success: "ok",
-    user: {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-    },
+    message:
+      "Please verify your email. OTP has been sent to your email accont!",
   });
 };
 
 exports.verifyEmail = async (req, res) => {
   const { userId, OTP } = req.body;
 
-  if (!isValidObjectId(userId)) return res.json({ error: "Invalid User!" });
+  if (!isValidObjectId(userId)) return res.json({ error: "Invalid user!" });
 
   const user = await User.findById(userId);
-  if (!user) return res.json({ error: "User not found" });
+  if (!user) return sendError(res, "user not found!", 404);
 
-  if (user.isVerified) return res.json({ error: "User is already verified" });
+  if (user.isVerified) return sendError(res, "user is already verified!");
 
   const token = await EmailVerificationToken.findOne({ owner: userId });
-  if (!token) return res.json({ error: "Token not found." });
+  if (!token) return sendError(res, "token not found!");
 
   const isMatched = await token.compareToken(OTP);
-
-  if (!isMatched) return res.json({ error: "Please submit a valid OTP" });
+  if (!isMatched) return sendError(res, "Please submit a valid OTP!");
 
   user.isVerified = true;
   await user.save();
 
   await EmailVerificationToken.findByIdAndDelete(token._id);
-  // Nodemailer Transport Initialization
-  const transport = transportInit();
+
+  var transport = generateMailTransporter();
+
   transport.sendMail({
-    from: "verification@moviewreview.com",
+    from: "verification@reviewapp.com",
     to: user.email,
-    subject: "Welcome to movie review app",
-    html: `
-    <p>Welcome to our app</p>
-    `,
+    subject: "Welcome Email",
+    html: "<h1>Welcome to our app and thanks for choosing us.</h1>",
   });
-
-  const jwtToken = jwt.sign({ userId: user._id }, process.env.jwt_secret, {
-    expiresIn: "1d",
-  });
-
-  res.json({
-    success: "ok",
-    message: "Email Verified, You are now logged in",
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      token: jwtToken,
-      isVerified: user.isVerified,
-      role: user.role,
-    },
-  });
+  res.json({ message: "Your email is verified." });
 };
 
-exports.resendVerificationToken = async (req, res) => {
+exports.resendEmailVerificationToken = async (req, res) => {
   const { userId } = req.body;
 
   const user = await User.findById(userId);
-  if (!user) return sendError(res, "User not found");
+  if (!user) return sendError(res, "user not found!");
 
-  if (user.isVerified) return sendError(res, "User is already verified");
+  if (user.isVerified)
+    return sendError(res, "This email id is already verified!");
 
-  const existingToken = await EmailVerificationToken.findOne({
+  const alreadyHasToken = await EmailVerificationToken.findOne({
     owner: userId,
   });
-  if (existingToken)
-    return sendError(res, "Token can be requested after one hour");
+  if (alreadyHasToken)
+    return sendError(
+      res,
+      "Only after one hour you can request for another token!"
+    );
 
-  // OTP Starts
-  let OTP = generateToken();
-  const newEmailVerificationTokens = new EmailVerificationToken({
+  // generate 6 digit otp
+  let OTP = generateOTP();
+
+  // store otp inside our db
+  const newEmailVerificationToken = new EmailVerificationToken({
     owner: user._id,
     token: OTP,
   });
-  await newEmailVerificationTokens.save();
-  // Nodemailer Transport Initialization
-  const transport = transportInit();
+
+  await newEmailVerificationToken.save();
+
+  // send that otp to our user
+
+  var transport = generateMailTransporter();
+
   transport.sendMail({
-    from: "verification@moviewreview.com",
+    from: "verification@reviewapp.com",
     to: user.email,
     subject: "Email Verification",
     html: `
-    <p>Your OTP is </p>${OTP}
+      <p>Your verification OTP</p>
+      <h1>${OTP}</h1>
+
     `,
   });
 
-  res.json({ message: "New OTP has been send to your account." });
+  res.json({
+    message: "New OTP has been sent to your registered email accout.",
+  });
 };
 
-exports.forgotPassword = async (req, res) => {
+exports.forgetPassword = async (req, res) => {
   const { email } = req.body;
 
-  if (!email) return sendError(res, "Email is missing");
+  if (!email) return sendError(res, "email is missing!");
 
   const user = await User.findOne({ email });
-  if (!user) return sendError(res, "User not found", 404);
+  if (!user) return sendError(res, "User not found!", 404);
 
   const alreadyHasToken = await PasswordResetToken.findOne({ owner: user._id });
   if (alreadyHasToken)
-    return sendError(res, "Token can be requested after one hour");
+    return sendError(
+      res,
+      "Only after one hour you can request for another token!"
+    );
 
   const token = await generateRandomByte();
   const newPasswordResetToken = await PasswordResetToken({
     owner: user._id,
     token,
   });
-
   await newPasswordResetToken.save();
 
   const resetPasswordUrl = `http://localhost:3000/reset-password?token=${token}&id=${user._id}`;
 
-  const transport = transportInit();
+  const transport = generateMailTransporter();
+
   transport.sendMail({
-    from: "security@moviewreview.com",
+    from: "security@reviewapp.com",
     to: user.email,
     subject: "Reset Password Link",
     html: `
-    <p>Your password reset link is </p><a _target="blank" href="${resetPasswordUrl}">here</a>
+      <p>Click here to reset password</p>
+      <a href='${resetPasswordUrl}'>Change Password</a>
+
     `,
   });
-  res.json({ message: "Password Reset Link sent to your Email Address." });
+
+  res.json({ message: "Link sent to your email!" });
 };
 
-exports.sendPasswordResetResponse = (req, res) => {
+exports.sendResetPasswordTokenStatus = (req, res) => {
   res.json({ valid: true });
-};
-
-exports.isAuthRes = (req, res) => {
-  const { user } = req;
-  res.json({
-    user: user._id,
-    name: user.name,
-    email: user.email,
-    isVerified: user.isVerified,
-    role: user.role,
-  });
 };
 
 exports.resetPassword = async (req, res) => {
@@ -189,51 +178,47 @@ exports.resetPassword = async (req, res) => {
 
   const user = await User.findById(userId);
   const matched = await user.comparePassword(newPassword);
-
   if (matched)
-    return sendError(res, "New password must be not similiar to old password");
+    return sendError(
+      res,
+      "The new password must be different from the old one!"
+    );
 
   user.password = newPassword;
-
   await user.save();
 
   await PasswordResetToken.findByIdAndDelete(req.resetToken._id);
 
-  const transport = transportInit();
+  const transport = generateMailTransporter();
+
   transport.sendMail({
-    from: "security@moviewreview.com",
+    from: "security@reviewapp.com",
     to: user.email,
-    subject: "Password Reset Succesfull",
+    subject: "Password Reset Successfully",
     html: `
-    <p>Your new password has been set succesfully </p>`,
+      <h1>Password Reset Successfully</h1>
+      <p>Now you can use new password.</p>
+
+    `,
   });
-  res.json({ message: "Password Reset successfully." });
+
+  res.json({
+    message: "Password reset successfully, now you can use new password.",
+  });
 };
 
 exports.signIn = async (req, res, next) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-  if (!user) return sendError(res, "Email/Password mismatch");
+  if (!user) return sendError(res, "Email/Password mismatch!");
 
   const matched = await user.comparePassword(password);
-  if (!matched) return sendError(res, "Email/Password mismatch");
+  if (!matched) return sendError(res, "Email/Password mismatch!");
 
-  const { _id, name, isVerified, role } = user;
+  const { _id, name, role } = user;
 
-  const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, {
-    expiresIn: "1d",
-  });
+  const jwtToken = jwt.sign({ userId: _id }, process.env.JWT_SECRET);
 
-  res.json({
-    success: "ok",
-    user: {
-      id: _id,
-      name,
-      email,
-      role,
-      token,
-      isVerified,
-    },
-  });
+  res.json({ user: { id: _id, name, email, role, token: jwtToken } });
 };

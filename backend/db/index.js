@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 mongoose
-  .connect(process.env.db_url)
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("DB is connected");
+    console.log("db is connected!");
   })
-  .catch((err) => {
-    console.log("DB connection is failed", err);
+  .catch((ex) => {
+    console.log("db connection failed: ", ex);
   });
